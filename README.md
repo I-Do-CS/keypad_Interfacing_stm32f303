@@ -1,42 +1,29 @@
-# STM32F303 Keypad Interfacing
+# STM32F303 Matrix Keypad
 
-**A register-level 4×4 matrix keypad scanner written in Embedded C.**
+A register-level scanner for a passive 4×4 keypad. The STM32F303 drives one row low at a time, reads the columns and prints the corresponding character to the debugger console.
 
-`Embedded C` · `STM32F303` · `Memory-mapped I/O` · `GPIO` · `OpenOCD`
+## Connect the keypad
 
-This independent firmware exercise configures GPIOA directly through volatile memory-mapped register structures and prints detected key presses to the debugger console, without relying on HAL GPIO calls in the application logic.
+Match the keypad’s row and column labels to the table. Connector order varies by keypad.
 
-## Wiring
-
-Target: STM32F303 Discovery board with a passive 4×4 matrix keypad. Check your keypad's physical pin order against its datasheet.
-
-| Keypad lines | STM32 GPIO | Configuration |
+| Keypad lines | STM32 pins | GPIO mode |
 | --- | --- | --- |
-| Rows 1–4 | PA0–PA3 | Outputs, scanned active-low |
-| Columns 1–4 | PA4–PA7 | Inputs with internal pull-ups |
+| R1, R2, R3, R4 | `PA0`, `PA1`, `PA2`, `PA3` | Active-low outputs |
+| C1, C2, C3, C4 | `PA4`, `PA5`, `PA6`, `PA7` | Inputs with internal pull-ups |
 
-```text
-        C1  C2  C3  C4
- R1      1   2   3   A
- R2      4   5   6   B
- R3      7   8   9   C
- R4      *   0   #   D
-```
+| | C1 | C2 | C3 | C4 |
+| --- | :-: | :-: | :-: | :-: |
+| **R1** | 1 | 2 | 3 | A |
+| **R2** | 4 | 5 | 6 | B |
+| **R3** | 7 | 8 | 9 | C |
+| **R4** | \* | 0 | # | D |
 
-## Operation
+## Run it
 
-1. Enable the GPIOA peripheral clock through RCC.
-2. Configure row output modes and column input/pull-up modes.
-3. Drive one row low at a time and inspect the column input register.
-4. Translate a detected row/column intersection to its key.
-5. Print the key through the debugger console with a simple busy-wait delay.
+With the keypad connected to the STM32F303 Discovery board:
 
-## Build and run
+1. Import the existing project into STM32CubeIDE and build the Debug configuration.
+2. Launch the supplied OpenOCD debug configuration with semihosting enabled.
+3. Press a key. Its character appears in the debugger console.
 
-- Import the existing STM32CubeIDE project and build for the STM32F303 target.
-- Connect the board and keypad; launch a debug session with the supplied OpenOCD configuration. Semihosting must be available for console output.
-- Test individual key presses in the debug console.
-
-The scanner and register setup live in [Src/main.c](Src/main.c). This is a single-key polling demonstration; verify electrical behavior before experimenting with simultaneous key presses.
-
-Independent project by [Ali Ghelichkhani](https://github.com/I-Do-CS).
+[main.c](Src/main.c) contains the scan loop and key mapping. [f303regs.h](Inc/f303regs.h) defines the memory-mapped register structures used to configure GPIOA directly.
